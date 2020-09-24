@@ -7462,6 +7462,68 @@ synth2 <- function(
     }
 }
 
+		    
+################################################################################
+## TFSD
+################################################################################
+
+TFSD <- function (wave, f , channel = 1, ovlp = 0, wn = "hamming", flim = c(2000,6000), nbwindows = 1) 
+{
+
+  # Warning, this index was initially developed to work from a third octave spectrogram with a time sampling of 125 ms.
+  
+  input <- inputw(wave = wave, f = f, channel = channel)
+  wave <- input$w
+  f <- input$f
+  
+  wl<-round(f/8) # time step 125 ms
+  
+  rm(input)
+  z <- sspectro(wave, f, wl = wl, wn = wn, ovlp = ovlp)
+
+  freq <- seq(f/wl, (f/2) - (f/wl), length.out = wl%/%2)
+  toctave=c(50,63,80,100,125,160,200,250,315,400,500,630,800,1000,1250,1600,2000,2500,3150,4000,5000,6300,8000,10000) # third octave band. 
+  toctavemin = toctave/(2^0.1666666)
+  toctavemax = toctave*(2^0.1666666)
+  imin <- which.min(abs(toctave-flim[1]))
+  imax <- which.min(abs(toctave-flim[2]))
+  
+  tfsds <- array(0, nbwindows)
+  
+  for (jj in 1:nbwindows) {
+    l <- dim(z)[2]
+    z1 <- z[, floor(l/nbwindows * (jj - 1) + 1):floor(l/nbwindows * jj)]
+
+    spectoct = matrix(0L, nrow = 20, ncol = dim(z1)[2]) # Third-octave band, 125ms spectrogram
+    
+    # third-octave band values between [100 Hz, 8kHz] from narrow band frequency values.
+    bin = 1
+    for (j in seq(4, 23)) {
+      indices = which(freq>toctavemin[j] & freq <toctavemax[j] )
+      L=0
+      spectoct[bin,]=10*log10(colSums(10^(z1[indices,]/10)))
+      bin =bin +1
+    }
+    
+    spectoctdf <- (diff(spectoct)) 
+    spectoctdft <- (diff(t(spectoctdf)))
+    spectoctdft<-t(spectoctdft)
+    
+    imin <- imin - 4 # remove the three first third octave band [50-100 Hz[
+    imax <- imax - 4 # remove the three first third octave band [50-100 Hz[
+    
+    tfsd <- 0
+    for (ind in seq(imin, imax)) {
+      tfsd =  sum(abs(spectoctdft[ind,])) + tfsd  
+      }
+    tfsds[jj] <- tfsd/sum(abs(spectoctdft))
+    rm(spectoct)
+  }
+  
+  return(na.omit(as.vector(tfsds)))
+}
+
+
 ################################################################################
 ##                                TH
 ################################################################################
