@@ -27,7 +27,7 @@ Warning, this index was initially developed to work from a third octave spectrog
 
 TFSD is computed according to formulation in reference.
 
-The higher the TFSD varies between 0 and 1, the greater the temporal presence of avian or human vocalizations. The TFSD is always greater than 0.
+The higher the TFSD varies between 0 and 1, the greater the temporal presence of avian or human vocalizations.  With the default configuration, a TFSD > 0.3 indicates a very important presence time of the vocalizations in the signal. The TFSD is always greater than 0.
 }
 
 \value{A numeric vector of length nbwindows giving the TFSD values.}
