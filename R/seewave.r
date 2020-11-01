@@ -7501,7 +7501,7 @@ TFSD <- function (wave, f , channel = 1, ovlp = 0, wn = "hamming", flim = c(2000
     for (j in seq(4, 23)) {
       indices = which(freq>toctavemin[j] & freq <toctavemax[j] )
       L=0
-      spectoct[bin,]=10*log10(colSums(10^(z1[indices,]/10)))
+      spectoct[bin,]=colSums(z1[indices,])
       bin =bin +1
     }
     
